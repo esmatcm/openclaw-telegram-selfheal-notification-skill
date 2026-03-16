@@ -55,11 +55,22 @@ Do not emit alerts during the outage itself if Telegram transport is the failed 
 
 ## Soft session-heal model
 
-If a session is both stale and heavy, create a recommendation event instead of restarting the gateway.
+If a session is stale-heavy or very-heavy, create a recommendation event instead of restarting the gateway.
 
 Recommended behavior:
 
-- detect stale-heavy sessions by idle time + file size thresholds
+### stale-heavy path
+- medium-heavy session
+- longer idle window
+- example: `idle > 900s` and `size > 600KB`
+
+### heavy fast path
+- very-heavy session
+- shorter idle window
+- example: `idle > 180s` and `size > 1.5MB`
+
+For both paths:
+
 - write a `session_heal_recommended` event
 - set recommendation to `/new`
 - route the recommendation back to the affected window after normal notification handling
@@ -73,4 +84,4 @@ A correct end-to-end test should confirm:
 - native OpenClaw send path
 - event/pending write-back after success or failure
 
-A `chat not found` result means the notification path executed, but the target chat is not valid for that bot/runtime.
+A `chat not found` result means the notification path executed, but the target chat is not valid or available for that bot/runtime.

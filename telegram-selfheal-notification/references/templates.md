@@ -22,13 +22,13 @@
 
 ```json
 {
-  "id": "SESSION-HEAL-qun3-1773663253",
+  "id": "SESSION-HEAL-qun3-1773663253-heavy_fast_path",
   "time": "2026-03-16T21:02:26+08:00",
   "kind": "session_heal_recommended",
   "apiReachable": true,
   "recentFail": false,
   "gatewayRestarted": false,
-  "symptoms": "stale_heavy_session idle=2893.6 size=698657",
+  "symptoms": "heavy_fast_path idle=307.1 size=2542502",
   "targetGuess": "telegram:group:-5188818850",
   "diagnosisReason": "context_or_token_heavy_session",
   "diagnosisConfidence": "medium",
@@ -58,7 +58,7 @@
   "time": "2026-03-16T21:02:26+08:00",
   "target": "telegram:group:-5188818850",
   "message": "检测到会话疑似卡重：更像上下文 / token 过重（置信度：medium）。建议在对应窗口执行 /new 进行软自愈。",
-  "sourceEventId": "SESSION-HEAL-qun3-1773663253",
+  "sourceEventId": "SESSION-HEAL-qun3-1773663253-heavy_fast_path",
   "diagnosisReason": "context_or_token_heavy_session",
   "diagnosisConfidence": "medium"
 }
