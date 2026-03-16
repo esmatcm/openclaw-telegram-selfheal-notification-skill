@@ -1,6 +1,6 @@
 ---
 name: telegram-selfheal-notification
-description: Design and implement OpenClaw Telegram self-healing with gateway restart protection, four-way stuck-case diagnosis, event logging, window attribution, and restore-notification routing back to the correct DM or Telegram group. Use when Telegram send failures cause stuck chats, when you need auto-recovery for gateway sendMessage/sendChatAction failures, or when you want per-window recovery notifications instead of one shared fallback alert.
+description: Design and implement OpenClaw Telegram self-healing with gateway restart protection, four-way stuck-case diagnosis, event logging, window attribution, restore-notification routing, and local post-install setup requirements. Use when Telegram send failures cause stuck chats, when you need auto-recovery for gateway sendMessage/sendChatAction failures, or when you want per-window recovery notifications instead of one shared fallback alert.
 ---
 
 # Telegram Self-Heal Notification
@@ -12,10 +12,21 @@ Build a Telegram recovery workflow for OpenClaw that does more than just restart
 When a Telegram chat appears stuck, the system should:
 
 1. classify the likely cause
-2. auto-restart the gateway only when transport failure is the problem
+2. auto-restart the gateway safely when transport failure is the problem
 3. record structured recovery events
 4. attribute the incident to the likely affected window
 5. notify the correct Telegram DM or group after recovery
+6. remind the operator that local host setup is required after installing the skill
+
+## Important post-install rule
+
+Installing this skill package alone is not enough.
+
+After installation, the operator must still configure the **local OpenClaw environment on the actual host** where the bot/runtime runs.
+
+If the local host setup is not completed, the self-heal system will not become active even if the skill is installed successfully.
+
+Read `references/post-install.md` before considering the setup finished.
 
 ## Four-way diagnosis
 
@@ -128,6 +139,22 @@ Do not guess and post to the wrong group.
 
 Carry diagnosis into the pending notification text so the operator sees not only that the system recovered, but also what kind of stuck case it most likely was.
 
+### Layer 7: soft session-heal
+
+Detect stale-heavy or very-heavy sessions and generate recommendation events.
+
+Suggested logic:
+
+- `heavy_fast_path`: high size + short idle
+- `stale_heavy_path`: medium size + longer idle
+
+For example:
+
+- `size > 1.5MB` and `idle > 180s`
+- `size > 600KB` and `idle > 900s`
+
+The recommendation should usually be `/new`.
+
 ## Recommended files
 
 Examples:
@@ -136,9 +163,11 @@ Examples:
 - diagnosis script
 - attribution script
 - dispatch script
+- session-heal script
 - window map JSON
 - event JSONL log
 - pending notification queue
+- local prompt files in the target agent workspace
 
 Suggested paths:
 
@@ -146,10 +175,12 @@ Suggested paths:
 - `~/.openclaw/bin/telegram-stuck-diagnose.sh`
 - `~/.openclaw/bin/telegram-selfheal-attribution.sh`
 - `~/.openclaw/bin/telegram-selfheal-dispatch.sh`
+- `~/.openclaw/bin/telegram-session-heal.sh`
 - `~/.openclaw/runtime/config/telegram-window-map.json`
 - `~/.openclaw/runtime/logs/telegram-selfheal-events.jsonl`
 - `~/.openclaw/runtime/logs/telegram-selfheal-pending.jsonl`
 - `~/.openclaw/runtime/logs/telegram-stuck-diagnosis.json`
+- local `AGENTS.md`, `SOUL.md`, `USER.md` in the active agent workspace
 
 ## Notification rules
 
@@ -175,6 +206,12 @@ Use these principles:
 检测到 Telegram 异常，已自动恢复。诊断：更像长任务占住会话（置信度：medium）。
 ```
 
+### Session-heal
+
+```text
+检测到会话疑似卡重：更像上下文 / token 过重（置信度：medium）。建议在对应窗口执行 /new 进行软自愈。
+```
+
 ### Fallback
 
 ```text
@@ -189,6 +226,7 @@ Use these principles:
 - you want recovery notices routed back to the matching window
 - you want a production-grade design instead of a restart-only shell script
 - you need to distinguish transport failures from routing issues, busy tasks, and heavy-context sessions
+- you also want the skill to remind installers about the required local host configuration after install
 
 ## References
 
@@ -197,3 +235,4 @@ Read these before implementation:
 - `references/architecture.md`
 - `references/checklist.md`
 - `references/templates.md`
+- `references/post-install.md`
